@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<title>Spotifly</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎵%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#0a0a0a;--sf:#141414;--sv:#1f1f1f;--tx:#f2f2f2;--mu:#a8a8a8;--g:#2be47a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--tx);font:16px system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+#app{display:flex;flex-direction:column;height:100dvh;max-width:640px;margin:0 auto;padding-top:env(safe-area-inset-top)}
+main{flex:1;overflow:auto;padding-bottom:12px}
+.v{animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+@keyframes up{from{transform:translateY(100%);opacity:0}}
+h1{font-size:26px;margin:0;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+h2{font-size:20px;margin:0;padding:20px 16px 8px}
+.logo{color:var(--g);font-weight:800}
+.row{display:flex;align-items:center;gap:12px;padding:8px 16px;cursor:pointer}
+.row:active{background:var(--sv)}
+.row img,.ph{width:56px;height:56px;border-radius:8px;object-fit:cover;background:var(--sv);flex:none;display:flex;align-items:center;justify-content:center;color:var(--g)}
+.grow{flex:1;min-width:0}
+.t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.t.on{color:var(--g)}
+small{color:var(--mu);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ic{background:none;border:0;color:var(--tx);padding:8px;border-radius:50%;display:flex;cursor:pointer;font:inherit}
+.ic.on{color:var(--g)}
+.back svg{transform:scaleX(-1)}
+.btn{background:var(--g);color:#000;border:0;border-radius:24px;padding:10px 20px;font:inherit;font-weight:700;cursor:pointer;display:inline-block;margin:4px 16px}
+.hint{color:var(--mu);padding:8px 16px;white-space:pre-line;line-height:1.6}
+.err{color:#ff8a80;padding:0 16px;font-size:13px}
+.cards{display:flex;gap:12px;overflow-x:auto;padding:0 16px}
+.card{flex:none;width:140px;background:var(--sv);border-radius:12px;padding:12px;cursor:pointer;color:var(--g)}
+.card b{display:block;color:var(--tx);margin-top:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.in{width:calc(100% - 32px);margin:8px 16px;background:var(--sv);color:var(--tx);border:1px solid #333;border-radius:24px;padding:12px 16px;font:inherit}
+.in:focus{outline:2px solid var(--g)}
+.spin{margin:24px auto;width:32px;height:32px;border:4px solid var(--sv);border-top-color:var(--g);border-radius:50%;animation:r 1s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+#pl{background:var(--sf);border-top:1px solid #222;animation:up .3s}
+#ytbox{aspect-ratio:16/9;background:#000;width:100%}
+#ytbox iframe{width:100%;height:100%;border:0}
+.prow{display:flex;align-items:center;padding:8px 8px 0 4px;padding-inline-start:16px}
+.seek{display:flex;align-items:center;gap:8px;padding:0 16px}
+.seek input{flex:1;accent-color:var(--g)}
+.seek small{width:40px;text-align:center;overflow:visible}
+.ctl{display:flex;justify-content:center;align-items:center;gap:16px;padding-bottom:4px}
+.big{background:var(--g);color:#000;width:52px;height:52px;border-radius:50%;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+nav{display:flex;background:var(--sf);border-top:1px solid #222;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:0;color:var(--mu);padding:8px;font:12px inherit;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+nav button.on{color:var(--g)}
+.md{position:fixed;inset:0;background:#0009;display:flex;align-items:flex-end;justify-content:center;z-index:9}
+.sheet{background:var(--sf);width:100%;max-width:640px;border-radius:16px 16px 0 0;padding:8px 0 calc(8px + env(safe-area-inset-bottom));animation:up .2s;max-height:70vh;overflow:auto}
+.sheet button{display:block;width:100%;text-align:start;background:none;border:0;color:var(--tx);padding:14px 20px;font:inherit;cursor:pointer}
+.sheet button:active{background:var(--sv)}
+</style>
+</head>
+<body>
+<div id="app">
+  <main id="main"></main>
+  <section id="pl" hidden>
+    <div id="ytbox" hidden><div id="ytp"></div></div>
+    <div class="prow">
+      <div class="grow"><b id="pt" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></b><small id="pa"></small></div>
+      <button class="ic" data-a="close" aria-label="סגור נגן"></button>
+    </div>
+    <div id="pe" class="err"></div>
+    <div class="seek" dir="ltr"><small id="t1">0:00</small><input type="range" id="sk" min="0" max="1" step="0.1" value="0"><small id="t2">0:00</small></div>
+    <div class="ctl" dir="ltr">
+      <button class="ic" data-a="prev" aria-label="הקודם"></button>
+      <button class="big" id="pp" data-a="pp" aria-label="נגן / השהה"></button>
+      <button class="ic" data-a="next" aria-label="הבא"></button>
+    </div>
+  </section>
+  <nav>
+    <button data-a="nav" data-v="home" id="n-home"></button>
+    <button data-a="nav" data-v="search" id="n-search"></button>
+    <button data-a="nav" data-v="lib" id="n-lib"></button>
+  </nav>
+</div>
+<div class="md" id="md" hidden><div class="sheet" id="sh"></div></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
+const I={play:'M8 5v14l11-7z',pause:'M6 19h4V5H6v14zm8-14v14h4V5h-4z',next:'M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z',prev:'M6 6h2v12H6zm3.5 6l8.5 6V6z',
+h:'M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z',
+hf:'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z',
+more:'M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z',
+search:'M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z',
+home:'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z',note:'M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z',
+back:'M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z',close:'M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
+edit:'M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z',
+del:'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z'};
+const ic=p=>`<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="${p}"/></svg>`;
+const fmt=s=>{s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+
+// ---------- מצב ושמירה ----------
+const S={key:ld('sp_key',''),recent:ld('sp_recent',[]),fav:ld('sp_fav',[]),pl:ld('sp_pl',[]),mine:ld('sp_mine',[]),
+  view:'home',pid:null,q:'',res:null,err:'',busy:false,recs:null,recsErr:'',queue:[],i:-1,playing:false,perr:'',sheet:null};
+const L={};
+const save=()=>{try{for(const k of['recent','fav','pl','mine'])localStorage.setItem('sp_'+k,JSON.stringify(S[k]));localStorage.setItem('sp_key',JSON.stringify(S.key))}catch{}};
+const cur=()=>S.queue[S.i];
+const isFav=s=>S.fav.some(x=>x.id===s.id);
+
+// ---------- קבצים מקומיים (IndexedDB) ----------
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open('spotifly',1);r.onupgradeneeded=()=>r.result.createObjectStore('f');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const putBlob=async(id,b)=>{const d=await idb();return new Promise((res,rej)=>{const t=d.transaction('f','readwrite');t.objectStore('f').put(b,id);t.oncomplete=res;t.onerror=()=>rej(t.error)})};
+const getBlob=async id=>{try{const d=await idb();return await new Promise(res=>{const r=d.transaction('f').objectStore('f').get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>res(null)})}catch{return null}};
+const delBlob=async id=>{try{const d=await idb();d.transaction('f','readwrite').objectStore('f').delete(id)}catch{}};
+
+// ---------- חיפוש ביוטיוב ----------
+const dec=s=>{const t=document.createElement('textarea');t.innerHTML=s;return t.value};
+async function ytSearch(q){
+  const u='https://www.googleapis.com/youtube/v3/search?'+new URLSearchParams({part:'snippet',type:'video',videoCategoryId:'10',videoEmbeddable:'true',maxResults:'25',regionCode:'IL',relevanceLanguage:'he',q,key:S.key});
+  let r,j;
+  try{r=await fetch(u);j=await r.json()}catch{throw new Error('אין חיבור לאינטרנט. בדוק את החיבור ונסה שוב.')}
+  if(!r.ok)throw new Error('שגיאה מ-YouTube: '+(j.error?.message||r.status));
+  return(j.items||[]).filter(x=>x.id?.videoId).map(x=>({id:x.id.videoId,src:'yt',title:dec(x.snippet.title),artist:dec(x.snippet.channelTitle).replace(' - Topic',''),thumb:x.snippet.thumbnails?.medium?.url||''}));
+}
+async function loadRecs(){
+  if(!S.key||S.recs!==null)return;
+  try{S.recs=await ytSearch('שירים ישראליים להיטים');S.recsErr=''}catch(e){S.recs=[];S.recsErr=e.message}
+  if(S.view==='home')render();
+}
+async function doSearch(){
+  S.q=$('#q').value.trim();if(!S.q||!S.key||S.busy)return;
+  S.busy=true;S.err='';render();
+  try{S.res=await ytSearch(S.q)}catch(e){S.res=null;S.err=e.message}
+  S.busy=false;render();
+}
+
+// ---------- נגן ----------
+const au=new Audio();let yt=null,ytReady=false,pendingYT=null,ytLoading=false,drag=false;
+function ensureYT(){
+  if(ytReady){yt.loadVideoById(pendingYT);return}
+  if(ytLoading)return;ytLoading=true;
+  window.onYouTubeIframeAPIReady=()=>{yt=new YT.Player('ytp',{width:'100%',height:'100%',videoId:pendingYT,playerVars:{playsinline:1,rel:0},events:{
+    onReady:()=>{ytReady=true;yt.playVideo()},
+    onStateChange:e=>{if(cur()?.src!=='yt')return;S.playing=e.data===1;if(e.data===0)next();renderPlayer();syncSession()},
+    onError:()=>{S.perr='אי אפשר לנגן את השיר הזה (ייתכן שבעל הזכויות חסם הטמעה).';renderPlayer();if(S.i+1<S.queue.length)setTimeout(()=>{next();S.perr='השיר הקודם לא היה זמין לניגון.';renderPlayer()},1500)}}})};
+  const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s);
+}
+async function loadSong(){
+  const s=cur();if(!s)return;
+  S.perr='';S.recent=[s,...S.recent.filter(x=>x.id!==s.id)].slice(0,30);save();
+  renderPlayer();meta();
+  if(s.src==='yt'){au.pause();pendingYT=s.id;ensureYT()}
+  else{
+    if(ytReady)yt.pauseVideo();
+    const b=await getBlob(s.id);if(cur()!==s)return;
+    if(!b){S.perr='הקובץ לא נמצא בטלפון.';renderPlayer();return}
+    if(au._u)URL.revokeObjectURL(au._u);au._u=URL.createObjectURL(b);au.src=au._u;au.play().catch(()=>{});
+  }
+  if(S.view!=='search')render();
+}
+function toggle(){const s=cur();if(!s)return;if(s.src==='yt'){if(!ytReady)return;S.playing?yt.pauseVideo():yt.playVideo()}else au.paused?au.play():au.pause()}
+const next=()=>{if(S.i+1<S.queue.length){S.i++;loadSong()}};
+const prev=()=>{if(S.i>0){S.i--;loadSong()}else seek(0)};
+const seek=t=>{const s=cur();if(!s)return;if(s.src==='yt'){if(ytReady)yt.seekTo(t,true)}else au.currentTime=t};
+au.onplay=()=>{if(cur()?.src==='local'){S.playing=true;renderPlayer();syncSession()}};
+au.onpause=()=>{if(cur()?.src==='local'&&!au.ended){S.playing=false;renderPlayer();syncSession()}};
+au.onended=()=>{if(cur()?.src==='local')next()};
+au.onerror=()=>{if(cur()?.src==='local'){S.perr='לא ניתן לנגן את הקובץ הזה.';renderPlayer()}};
+function renderPlayer(){
+  const s=cur();$('#pl').hidden=!s;if(!s)return;
+  $('#pt').textContent=s.title;$('#pa').textContent=s.artist;
+  $('#ytbox').hidden=s.src!=='yt';
+  $('#pp').innerHTML=ic(S.playing?I.pause:I.play);
+  $('#pe').textContent=S.perr;
+}
+function tick(){
+  const s=cur();if(!s)return;let p=0,d=0;
+  if(s.src==='yt'){if(ytReady&&yt.getCurrentTime){p=yt.getCurrentTime();d=yt.getDuration()}}else{p=au.currentTime||0;d=isFinite(au.duration)?au.duration:0}
+  if(!drag){$('#sk').max=d||1;$('#sk').value=p;$('#t1').textContent=fmt(p)}
+  $('#t2').textContent=fmt(d);
+}
+const sk=$('#sk');sk.oninput=()=>{drag=true;$('#t1').textContent=fmt(sk.value)};sk.onchange=()=>{seek(+sk.value);drag=false};
+// בקרים במסך הנעילה ובהתראה (עובד עם קבצים מהטלפון)
+function meta(){
+  if(!('mediaSession'in navigator))return;const s=cur();if(!s)return;
+  navigator.mediaSession.metadata=new MediaMetadata({title:s.title,artist:s.artist,artwork:s.thumb?[{src:s.thumb,sizes:'320x180',type:'image/jpeg'}]:[]});
+}
+function syncSession(){if('mediaSession'in navigator)navigator.mediaSession.playbackState=S.playing?'playing':'paused'}
+if('mediaSession'in navigator){const h={play:()=>{if(!S.playing)toggle()},pause:()=>{if(S.playing)toggle()},nexttrack:next,previoustrack:prev};
+  for(const k in h)try{navigator.mediaSession.setActionHandler(k,h[k])}catch{}}
+
+// ---------- תצוגה ----------
+function row(s,l,i,pid){
+  return `<div class="row" data-a="play" data-l="${l}" data-i="${i}">
+    ${s.thumb?`<img src="${esc(s.thumb)}" alt="" loading="lazy">`:`<div class="ph">${ic(I.note)}</div>`}
+    <div class="grow"><div class="t${cur()?.id===s.id?' on':''}">${esc(s.title)}</div><small>${esc(s.artist)}${s.src==='local'?' · מהטלפון':''}</small></div>
+    <button class="ic${isFav(s)?' on':''}" data-a="fav" data-l="${l}" data-i="${i}" aria-label="מועדף">${ic(isFav(s)?I.hf:I.h)}</button>
+    <button class="ic" data-a="more" data-l="${l}" data-i="${i}" data-p="${pid||''}" aria-label="עוד">${ic(I.more)}</button></div>`;
+}
+const list=(a,l,pid)=>{L[l]=a;return a.map((s,i)=>row(s,l,i,pid)).join('')};
+const noKey=()=>`<div class="hint">כדי לחפש ולקבל המלצות צריך להגדיר מפתח YouTube API (פעם אחת, בחינם).</div><button class="btn" data-a="nav" data-v="set">להגדרת המפתח</button>`;
+const hd=(t,extra='')=>`<h1><span>${t}</span><span style="display:flex">${extra}</span></h1>`;
+const header=(t,extra='')=>`<h1><button class="ic back" data-a="nav" data-v="lib" aria-label="חזרה">${ic(I.back)}</button><span class="grow" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t)}</span><span style="display:flex">${extra}</span></h1>`;
+
+function home(){
+  let h=hd('<span class="logo">Spotifly</span>',`<button class="ic" data-a="nav" data-v="set" style="font-size:22px" aria-label="הגדרות">⚙</button>`);
+  h+='<h2>שירים אחרונים</h2>'+(S.recent.length?list(S.recent.slice(0,5),'recent'):'<div class="hint">עדיין לא ניגנת שירים. חפש שיר או הוסף שירים מהטלפון בספרייה.</div>');
+  L.recent=S.recent;
+  h+='<h2>הפלייליסטים שלך</h2>'+(S.pl.length?`<div class="cards">${S.pl.map(p=>`<div class="card" data-a="openpl" data-id="${p.id}">${ic(I.note)}<b>${esc(p.name)}</b><small>${p.songs.length} שירים</small></div>`).join('')}</div>`:'<div class="hint">עדיין אין פלייליסטים. אפשר ליצור בספרייה.</div>');
+  h+='<h2>המלצות עבורך</h2>';
+  h+=!S.key?noKey():S.recsErr?`<div class="hint">${esc(S.recsErr)}</div>`:S.recs===null?'<div class="spin"></div>':S.recs.length?list(S.recs,'recs'):'<div class="hint">לא נמצאו המלצות כרגע.</div>';
+  return h;
+}
+function search(){
+  let h=`<form id="sf"><input class="in" id="q" type="search" enterkeyhint="search" placeholder="שם שיר, אמן או מילים" value="${esc(S.q)}"></form>`;
+  const ql=S.q.toLowerCase(),loc=S.q?S.mine.filter(s=>s.title.toLowerCase().includes(ql)):[];
+  if(loc.length)h+='<h2>מהטלפון</h2>'+list(loc,'loc');
+  h+=!S.key?noKey():S.busy?'<div class="spin"></div>':S.err?`<div class="hint">${esc(S.err)}</div>`:S.res===null?'<div class="hint">חפש שירים ביוטיוב לפי שם, אמן או מילים מהשיר.</div>':S.res.length?'<h2>מיוטיוב</h2>'+list(S.res,'res'):'<div class="hint">לא נמצאו תוצאות.</div>';
+  return h;
+}
+function lib(){
+  let h=hd('הספרייה',`<button class="ic" data-a="newpl" aria-label="פלייליסט חדש" style="color:var(--g);font-size:28px;line-height:1">+</button>`);
+  h+=`<div class="row" data-a="nav" data-v="fav"><div class="ph">${ic(I.hf)}</div><div class="grow"><div class="t">המועדפים</div><small>${S.fav.length} שירים</small></div></div>`;
+  h+=S.pl.map(p=>`<div class="row" data-a="openpl" data-id="${p.id}"><div class="ph">${ic(I.note)}</div><div class="grow"><div class="t">${esc(p.name)}</div><small>${p.songs.length} שירים</small></div></div>`).join('');
+  if(!S.pl.length)h+='<div class="hint">אין פלייליסטים עדיין. לחץ + כדי ליצור.</div>';
+  h+='<h2>השירים שלי (מהטלפון)</h2><label class="btn">הוסף שירים מהטלפון<input type="file" id="fi" accept="audio/*" multiple hidden></label>';
+  h+=S.mine.length?list(S.mine,'mine'):'<div class="hint">קבצי מוזיקה שהוספת נשמרים באתר ומתנגנים גם כשעוברים לאפליקציה אחרת או נועלים את המסך.</div>';
+  return h;
+}
+function detail(title,songs,pid){
+  const ex=pid?`<button class="ic" data-a="ren" aria-label="שנה שם">${ic(I.edit)}</button><button class="ic" data-a="delpl" aria-label="מחק">${ic(I.del)}</button>`:'';
+  let h=header(title,ex);
+  if(!songs.length)return h+`<div class="hint">${pid?'הפלייליסט ריק. הוסף שירים מהתפריט (⋮) שליד כל שיר.':'עוד לא סימנת מועדפים. לחץ על הלב ליד שיר.'}</div>`;
+  L.cur=songs;
+  return h+`<button class="btn" data-a="playall">▶ נגן הכל</button>`+list(songs,'det',pid);
+}
+function sett(){
+  return header('הגדרות')+`<h2>מפתח YouTube Data API</h2>
+  <div class="hint">1. היכנס ל-console.cloud.google.com וצור פרויקט.
+2. חפש והפעל את "YouTube Data API v3".
+3. Credentials ← Create credentials ← API key.
+4. כדי שאף אחד לא יוכל להשתמש במפתח שלך, ב-Application restrictions בחר Websites והוסף את כתובת האתר הזה.
+5. הדבק את המפתח כאן. הוא נשמר רק בדפדפן שלך.</div>
+  <input class="in" id="kin" type="text" dir="ltr" placeholder="API key" value="${esc(S.key)}"><button class="btn" data-a="setkey">שמור</button><div class="hint" id="ksaved"></div>`;
+}
+function render(){
+  const v=S.view,p=S.pl.find(x=>x.id===S.pid);
+  const html=v==='home'?home():v==='search'?search():v==='lib'?lib():v==='fav'?detail('המועדפים',S.fav,null):v==='pl'&&p?detail(p.name,p.songs,p.id):v==='set'?sett():lib();
+  $('#main').innerHTML='<div class="v">'+html+'</div>';
+  const tab=v==='home'||v==='set'?'home':v==='search'?'search':'lib';
+  for(const [k,i,t] of [['home',I.home,'בית'],['search',I.search,'חיפוש'],['lib',I.note,'הספרייה']]){const b=$('#n-'+k);b.innerHTML=ic(i)+t;b.classList.toggle('on',tab===k)}
+}
+
+// ---------- פעולות ----------
+function openSheet(s,pid){
+  S.sheet={s,pid};
+  $('#sh').innerHTML=S.pl.map(p=>`<button data-a="addto" data-id="${p.id}">הוסף ל-${esc(p.name)}</button>`).join('')+
+    `<button data-a="newpl2">פלייליסט חדש…</button>`+(pid?'<button data-a="rmpl">הסר מהפלייליסט</button>':'')+(s.src==='local'?'<button data-a="deldev">מחק מהטלפון</button>':'')+'<button data-a="shut" style="color:var(--mu)">סגור</button>';
+  $('#md').hidden=false;
+}
+const shut=()=>{$('#md').hidden=true;S.sheet=null};
+function newPl(song){const n=prompt('שם הפלייליסט:');if(!n||!n.trim())return;S.pl.push({id:'p'+Date.now(),name:n.trim(),songs:song?[song]:[]});save();render()}
+document.addEventListener('click',e=>{
+  if(e.target.id==='md'){shut();return}
+  const el=e.target.closest('[data-a]');if(!el)return;
+  const a=el.dataset.a,d=el.dataset,s=L[d.l]?.[+d.i];
+  const pl=S.pl.find(x=>x.id===S.pid);
+  switch(a){
+    case 'nav':S.view=d.v;render();break;
+    case 'play':S.queue=L[d.l].slice();S.i=+d.i;loadSong();break;
+    case 'playall':S.queue=L.cur.slice();S.i=0;loadSong();break;
+    case 'fav':S.fav=isFav(s)?S.fav.filter(x=>x.id!==s.id):[s,...S.fav];save();render();break;
+    case 'more':openSheet(s,d.p);break;
+    case 'pp':toggle();break;
+    case 'next':next();break;
+    case 'prev':prev();break;
+    case 'close':au.pause();if(ytReady)yt.pauseVideo();S.queue=[];S.i=-1;S.playing=false;renderPlayer();render();break;
+    case 'newpl':newPl();break;
+    case 'openpl':S.pid=d.id;S.view='pl';render();break;
+    case 'ren':{const n=prompt('שם חדש:',pl.name);if(n&&n.trim()){pl.name=n.trim();save();render()}break}
+    case 'delpl':if(confirm('למחוק את "'+pl.name+'"?')){S.pl=S.pl.filter(x=>x!==pl);save();S.view='lib';render()}break;
+    case 'addto':{const p=S.pl.find(x=>x.id===d.id);if(p&&!p.songs.some(x=>x.id===S.sheet.s.id))p.songs.push(S.sheet.s);save();shut();render();break}
+    case 'newpl2':{const x=S.sheet.s;shut();newPl(x);break}
+    case 'rmpl':{const p=S.pl.find(x=>x.id===S.pid);if(p)p.songs=p.songs.filter(x=>x.id!==S.sheet.s.id);save();shut();render();break}
+    case 'deldev':{const x=S.sheet.s;if(!confirm('למחוק את "'+x.title+'" מהטלפון?'))break;
+      S.mine=S.mine.filter(m=>m.id!==x.id);S.fav=S.fav.filter(m=>m.id!==x.id);S.recent=S.recent.filter(m=>m.id!==x.id);S.pl.forEach(p=>p.songs=p.songs.filter(m=>m.id!==x.id));delBlob(x.id);save();shut();render();break}
+    case 'shut':shut();break;
+    case 'setkey':S.key=$('#kin').value.trim();S.recs=null;S.recsErr='';save();$('#ksaved').textContent='נשמר ✓';loadRecs();break;
+  }
+});
+document.addEventListener('submit',e=>{if(e.target.id==='sf'){e.preventDefault();$('#q').blur();doSearch()}});
+document.addEventListener('change',async e=>{
+  if(e.target.id!=='fi')return;
+  try{
+    for(const f of e.target.files){
+      const id='L'+Date.now()+Math.random().toString(36).slice(2,6);
+      await putBlob(id,f);S.mine.unshift({id,src:'local',title:f.name.replace(/\.[^.]+$/,''),artist:'השיר שלי',thumb:''});
+    }
+    save();render();
+  }catch{alert('לא הצלחתי לשמור את הקבצים בטלפון. ייתכן שאין מקום פנוי.')}
+});
+
+render();renderPlayer();loadRecs();setInterval(tick,500);
+$('[data-a=close]').innerHTML=ic(I.close);$('[data-a=prev]').innerHTML=ic(I.prev);$('[data-a=next]').innerHTML=ic(I.next);
+try{navigator.storage?.persist?.()}catch{}
+</script>
+</body>
+</html>
